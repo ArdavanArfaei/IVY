@@ -22,7 +22,7 @@ h1, h2, h3, .gro, .num, button, label, input, select {
 }
 
 /* Header */
-header { margin-bottom: 36px; position: relative; }
+header { margin-bottom: 36px; position: relative; padding-left: 24px; }
 
 .advanced-tog {
   position: absolute;
