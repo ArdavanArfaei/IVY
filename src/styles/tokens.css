@@ -1,0 +1,31 @@
+:root {
+  /* Surface */
+  --paper: #F7F6F1;
+  --card:  #FCFBF8;
+
+  /* Ink */
+  --ink:       #37383A;
+  --ink-soft:  #6E7073;
+  --ink-faint: #A0A2A3;
+
+  /* Border */
+  --line: #E5E3DB;
+
+  /* Palette */
+  --rose:        #E3B9B6;
+  --rose-deep:   #C4877F;
+  --sage:        #B5C8B2;
+  --sage-deep:   #7F9C7E;
+  --peri:        #B6BEDF;
+  --peri-deep:   #828EC6;
+  --butter:      #EADDA8;
+  --butter-deep: #BDA55F;
+  --lilac:       #D2BFDB;
+  --lilac-deep:  #9C82AC;
+  --clay:        #E2C4AE;
+  --clay-deep:   #B98F70;
+
+  /* Geometry */
+  --r:   14px;
+  --gut: 84px;
+}

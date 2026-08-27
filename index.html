@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IVF + PGT planner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/styles/tokens.css">
+  <link rel="stylesheet" href="/src/styles/base.css">
+  <link rel="stylesheet" href="/src/styles/components.css">
+  <link rel="stylesheet" href="/src/styles/results.css">
+  <script type="module" src="/src/main.js"></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">Retrieval to twenty weeks</div>
+    <h1>What one egg retrieval is<br>actually <em>likely to give you</em></h1>
+    <p class="sub">These are estimates drawn from population averages — your journey is entirely your own. Put in what you know and let the numbers give you a gentle sense of what's possible.</p>
+    <label class="advanced-tog" aria-label="Advanced mode">
+      <span class="switch peri">
+        <input type="checkbox" id="advancedMode">
+        <span class="track"></span><span class="knob"></span>
+      </span>
+      <span class="advanced-label">Advanced</span>
+    </label>
+  </header>
+
+  <div class="grid">
+
+    <!-- CONTROLS -->
+    <div>
+
+      <!-- Her numbers -->
+      <div class="card">
+        <h2>Her numbers</h2>
+
+        <div class="field">
+          <label for="age">Age at retrieval</label>
+          <div class="agerow">
+            <input type="range" id="age" min="25" max="46" value="34" step="1">
+            <div class="agebox" id="ageOut">34</div>
+          </div>
+          <div class="hint">The single biggest driver of everything below.</div>
+        </div>
+
+        <div class="field">
+          <label for="retrievals">Retrievals planned</label>
+          <div class="agerow">
+            <input type="range" id="retrievals" min="1" max="4" value="1" step="1">
+            <div class="agebox" id="retrievalsOut">1</div>
+          </div>
+          <div class="hint">Blastocysts from multiple retrievals pool together before filtering.</div>
+        </div>
+
+        <div class="field">
+          <label for="amh">AMH (ng/mL)</label>
+          <input type="number" id="amh" min="0" max="15" step="0.1" placeholder="e.g. 2.1">
+        </div>
+
+        <div class="field">
+          <label for="afc">Antral follicle count</label>
+          <input type="number" id="afc" min="0" max="60" step="1" placeholder="both ovaries, e.g. 14">
+          <div class="hint">Fill in either or both. These predict how many eggs, not how good they are.</div>
+        </div>
+
+        <div class="field">
+          <label for="eggs">Eggs actually retrieved</label>
+          <input type="number" id="eggs" min="0" max="60" step="1" placeholder="skip until you have it">
+          <div class="hint">If you have this, it overrides the prediction above.</div>
+        </div>
+
+        <div class="field">
+          <label for="blasts">Blastocysts banked</label>
+          <input type="number" id="blasts" min="0" max="40" step="1" placeholder="skip until you have it">
+          <div class="hint">If you have this, it overrides eggs retrieved and everything upstream.</div>
+        </div>
+      </div>
+
+      <!-- His side -->
+      <div class="card">
+        <h2>His side</h2>
+        <div class="field">
+          <label for="mfLevel">Sperm situation</label>
+          <select id="mfLevel">
+            <option value="none">No male factor — normal semen</option>
+            <option value="mild">Mild OAT — usable ejaculated sample</option>
+            <option value="moderate">Moderate OAT — ICSI required</option>
+            <option value="severe">Severe OAT — surgical retrieval (TESE)</option>
+            <option value="oa">Obstructive azoospermia — MESA / TESA</option>
+            <option value="noa">Non-obstructive azoospermia — micro-TESE</option>
+          </select>
+          <div class="hint" id="mfHint"></div>
+        </div>
+      </div>
+
+      <!-- Testing -->
+      <div class="card">
+        <h2>Testing</h2>
+
+        <!-- PGT-A -->
+        <div class="tog" id="pgtaRow">
+          <div>
+            <div class="tl">PGT-A</div>
+            <div class="td">Screens each blastocyst for chromosome count</div>
+          </div>
+          <span class="switch">
+            <input type="checkbox" id="pgta" checked aria-label="PGT-A">
+            <span class="track"></span><span class="knob"></span>
+          </span>
+        </div>
+
+        <!-- PGT-M -->
+        <div class="tog">
+          <div>
+            <div class="tl">PGT-M</div>
+            <div class="td">Custom test for one inherited condition</div>
+          </div>
+          <span class="switch rose">
+            <input type="checkbox" id="pgtm" aria-label="PGT-M">
+            <span class="track"></span><span class="knob"></span>
+          </span>
+        </div>
+        <div class="subopt" id="pgtmOpts" hidden>
+          <label for="inh" style="font-size:13px;font-weight:500;display:block;margin:10px 0 6px">Inheritance pattern</label>
+          <select id="inh">
+            <option value="ar">Autosomal recessive, both partners carry — 75% usable</option>
+            <option value="ad">Autosomal dominant, one partner carries — 50% usable</option>
+            <option value="xl">X-linked, she carries — transfer unaffected — 75% usable</option>
+            <option value="xl_strict">X-linked, also avoiding carrier females — 50% usable</option>
+          </select>
+          <div class="hint">Mendelian odds. Applied on top of chromosome screening, not instead of it.</div>
+        </div>
+
+        <!-- PGT-SR -->
+        <div class="tog">
+          <div>
+            <div class="tl">PGT-SR</div>
+            <div class="td">Structural rearrangement — translocation or inversion</div>
+          </div>
+          <span class="switch peri">
+            <input type="checkbox" id="pgtSR" aria-label="PGT-SR">
+            <span class="track"></span><span class="knob"></span>
+          </span>
+        </div>
+        <div class="subopt" id="pgtSROpts" hidden>
+          <div class="field-row">
+            <div class="field" style="margin:0;flex:1">
+              <label for="srType" style="font-size:13px;font-weight:500;display:block;margin-bottom:6px">Rearrangement type</label>
+              <select id="srType">
+                <option value="reciprocal">Reciprocal translocation</option>
+                <option value="rob">Robertsonian translocation</option>
+                <option value="inversion">Inversion</option>
+              </select>
+            </div>
+            <div class="field" style="margin:0;flex:1" id="srCarrierField">
+              <label for="srCarrier" style="font-size:13px;font-weight:500;display:block;margin-bottom:6px">Carrier</label>
+              <select id="srCarrier">
+                <option value="male">Male carrier</option>
+                <option value="female">Female carrier</option>
+              </select>
+            </div>
+          </div>
+          <div class="hint" id="srPassNote"></div>
+          <div class="hint" style="margin-top:6px">PGT-SR includes chromosome screening in the same assay — PGT-A is disabled while SR is active.</div>
+        </div>
+
+        <!-- PGT-HLA -->
+        <div class="tog">
+          <div>
+            <div class="tl">PGT-HLA</div>
+            <div class="td">Savior sibling — HLA-matched to a living child</div>
+          </div>
+          <span class="switch lilac">
+            <input type="checkbox" id="pgtHLA" aria-label="PGT-HLA">
+            <span class="track"></span><span class="knob"></span>
+          </span>
+        </div>
+
+        <!-- PGT-P -->
+        <div class="tog">
+          <div>
+            <div class="tl">PGT-P <span class="badge-d">contested</span></div>
+            <div class="td">Polygenic risk scoring of embryos</div>
+          </div>
+          <span class="switch" style="opacity:.5">
+            <input type="checkbox" id="pgtP" aria-label="PGT-P">
+            <span class="track"></span><span class="knob"></span>
+          </span>
+        </div>
+        <div class="subopt" id="pgtPNote" hidden>
+          <div class="hint">ASRM, ESHG, and ACMG have each stated that PGT-P is unproven and should not be offered as a clinical service. This toggle does not change any number in the model.</div>
+        </div>
+
+        <!-- PGT stack display -->
+        <div id="pgtStack" hidden></div>
+      </div>
+
+      <!-- Tier 2: Advanced inputs -->
+      <div class="card" id="tier2" hidden>
+        <h2>Advanced factors</h2>
+
+        <!-- Female diagnoses -->
+        <div class="field">
+          <label style="margin-bottom:10px">Female diagnoses</label>
+          <div class="diag-grid">
+            <label class="diag-item"><input type="checkbox" class="diag" value="pcos"> <span><b>PCOS</b><em>Higher yield, slight MII penalty — Grade B/C</em></span></label>
+            <label class="diag-item"><input type="checkbox" class="diag" value="endo_none"> <span><b>Endometriosis</b><em>No endometrioma — yield ×0.85 — Grade B</em></span></label>
+            <label class="diag-item"><input type="checkbox" class="diag" value="endo_large"> <span><b>Endometriosis</b><em>Endometrioma &gt;4 cm or post-surgical — yield ×0.70 — Grade B</em></span></label>
+            <label class="diag-item"><input type="checkbox" class="diag" value="adeno"> <span><b>Adenomyosis</b><em>MUSA features — LBR ↓, miscarriage ↑ — Grade C</em></span></label>
+            <label class="diag-item"><input type="checkbox" class="diag" value="adeno_inner"> <span><b>Adenomyosis</b><em>Inner myometrium — worst subtype — Grade C</em></span></label>
+            <label class="diag-item"><input type="checkbox" class="diag" value="endo_adeno"> <span><b>Endo + adenomyosis</b><em>Combined effect — CLBR ×0.80 — Grade C</em></span></label>
+            <label class="diag-item"><input type="checkbox" class="diag" value="hydro_untreated"> <span><b>Hydrosalpinx</b><em>Untreated — LBR roughly halved — Grade A</em></span></label>
+            <label class="diag-item"><input type="checkbox" class="diag" value="hydro_treated"> <span><b>Hydrosalpinx</b><em>After salpingectomy — restored — Grade A</em></span></label>
+            <label class="diag-item"><input type="checkbox" class="diag" value="fibroid_sub"> <span><b>Submucosal fibroid</b><em>LBR ~70% lower — Grade B</em></span></label>
+            <label class="diag-item"><input type="checkbox" class="diag" value="fibroid_intra_dist"> <span><b>Intramural fibroid</b><em>Cavity-distorting — LBR ×0.70 — Grade C</em></span></label>
+            <label class="diag-item"><input type="checkbox" class="diag" value="fibroid_intra_none"> <span><b>Intramural fibroid</b><em>Non-distorting — no clear effect — Grade D</em></span></label>
+          </div>
+          <div class="hint" style="margin-top:8px">DOR: if you have AMH or AFC entered, those numbers already reflect your reserve — no extra penalty is applied.</div>
+        </div>
+
+        <!-- Lifestyle -->
+        <div class="field">
+          <label for="bmi">Female BMI</label>
+          <input type="number" id="bmi" min="14" max="55" step="0.5" placeholder="e.g. 24.5">
+          <div class="hint">Normal range (18.5–24.9) has no applied modifier.</div>
+        </div>
+
+        <div class="field">
+          <label for="smoking">Smoking</label>
+          <select id="smoking">
+            <option value="none">None</option>
+            <option value="active">Active smoker (female)</option>
+            <option value="secondhand">Secondhand exposure</option>
+          </select>
+        </div>
+
+        <!-- Male factors (advanced) -->
+        <div class="field">
+          <label for="maleAge">Partner age</label>
+          <input type="number" id="maleAge" min="20" max="75" step="1" placeholder="e.g. 38">
+          <div class="hint">Effect only applies above age 45 (donor-egg data, OR ≈ 0.78 LBR — Grade B).</div>
+        </div>
+
+        <div class="field">
+          <label for="dfi">Sperm DNA fragmentation (DFI band)</label>
+          <select id="dfi">
+            <option value="low">Low — &lt;15% (reference)</option>
+            <option value="mid">Moderate — 15–30%</option>
+            <option value="high">High — &gt;30%</option>
+            <option value="unknown">Unknown</option>
+          </select>
+          <div class="hint">DFI raises miscarriage risk. It does not significantly affect fertilization or blastulation rates with ICSI.</div>
+        </div>
+
+        <!-- Transfer preferences -->
+        <div class="field">
+          <label for="failedFET">Prior failed euploid transfers</label>
+          <select id="failedFET">
+            <option value="0">None</option>
+            <option value="1">1 failed transfer</option>
+            <option value="2">2 failed transfers</option>
+            <option value="3">3 or more</option>
+          </select>
+        </div>
+
+        <!-- Embryo details -->
+        <details>
+          <summary style="font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:500;cursor:pointer;padding:8px 0;color:var(--ink-soft)">Embryo details</summary>
+          <div style="padding-top:12px">
+            <div class="field">
+              <label for="blastGrade">Blastocyst grade being transferred</label>
+              <select id="blastGrade">
+                <option value="">Not specified</option>
+                <option value="AA">AA — top grade</option>
+                <option value="AB">AB</option>
+                <option value="BA">BA</option>
+                <option value="BB">BB</option>
+                <option value="BC">BC</option>
+                <option value="CB">CB</option>
+                <option value="CC">CC — lowest grade</option>
+                <option value="mixed">Mixed / not graded</option>
+              </select>
+              <div class="hint">Grade predicts euploidy well. Once euploid, it's a tiebreaker for implantation, not a gate — Grade B.</div>
+            </div>
+            <div class="field">
+              <label for="biopsyDay">Day of biopsy</label>
+              <select id="biopsyDay">
+                <option value="5">Day 5 (reference)</option>
+                <option value="6">Day 6 — euploidy rate ≈30% lower</option>
+                <option value="7">Day 7 — euploidy and implantation both lower</option>
+                <option value="mixed">Mixed or unknown</option>
+              </select>
+            </div>
+          </div>
+        </details>
+
+        <!-- Confidence filter -->
+        <div class="tog" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--line)">
+          <div>
+            <div class="tl">Include contested (Grade D) effects</div>
+            <div class="td">These have wide confidence intervals or conflicting evidence</div>
+          </div>
+          <span class="switch">
+            <input type="checkbox" id="includeD" aria-label="Include contested effects">
+            <span class="track"></span><span class="knob"></span>
+          </span>
+        </div>
+      </div>
+
+    </div><!-- end controls column -->
+
+    <!-- RESULTS -->
+    <div>
+
+      <div class="result">
+        <div id="noaGate" hidden>
+          <div class="noa-headline">
+            <span class="noa-pct" id="noaSRR"></span><span class="noa-op">sperm found</span>
+            <span class="noa-times">×</span>
+            <span class="noa-pct" id="noaCLBR"></span><span class="noa-op">live birth if cycle happens</span>
+            <span class="noa-equals">=</span>
+          </div>
+        </div>
+        <div class="bignum" id="clbr">—<span>%</span></div>
+        <div id="sensitivityStrip" hidden class="sensitivity-strip"></div>
+        <div class="biglabel" id="clbrLabel">chance of a live birth from this one retrieval, working through every embryo it produces</div>
+        <div class="stats">
+          <div class="stat"><div class="k" id="sEmb">—</div><div class="v">embryos you can transfer</div></div>
+          <div class="stat"><div class="k" id="sTr">—</div><div class="v">transfers it likely takes</div></div>
+          <div class="stat"><div class="k" id="sWk">—</div><div class="v">weeks to a positive test</div></div>
+          <div class="stat"><div class="k" id="sMc">—</div><div class="v">miscarriage risk per pregnancy</div></div>
+        </div>
+      </div>
+
+      <!-- Modifier chips (advanced mode) -->
+      <div id="chips" hidden></div>
+
+      <div class="card">
+        <h2>Where the eggs go</h2>
+        <div id="funnel"></div>
+      </div>
+
+      <div class="card">
+        <h2>Screening for chromosomes, or not</h2>
+        <div class="compare">
+          <div class="cbox" id="cWith">
+            <div class="ct" id="cWithLabel">With PGT-A</div>
+            <div class="cn" id="cWithN">—</div>
+            <div class="cd" id="cWithD"></div>
+          </div>
+          <div class="cbox" id="cWithout">
+            <div class="ct">Without chromosome screening</div>
+            <div class="cn" id="cWithoutN">—</div>
+            <div class="cd" id="cWithoutD"></div>
+          </div>
+        </div>
+        <div class="notes"><p id="compareNote"></p></div>
+      </div>
+
+      <div class="card">
+        <h2>The whole thing, at a glance</h2>
+        <div class="tl-tabs">
+          <button class="tl-tab active" data-tab="ivf">IVF journey</button>
+          <button class="tl-tab" data-tab="pregnancy">Pregnancy</button>
+        </div>
+        <div class="tlwrap">
+          <div class="tlscroll">
+            <div class="tlinner" id="tlinner">
+              <div class="tlhead"><div class="tlunit">month</div><div class="axis" id="axis"></div></div>
+              <div class="lane" data-tl="ivf"><div class="lanename">Her</div><div class="lanetrack" id="laneHer"></div></div>
+              <div class="lane" data-tl="ivf"><div class="lanename">Him</div><div class="lanetrack" id="laneHim"></div></div>
+              <div class="lane" data-tl="ivf"><div class="lanename">Lab</div><div class="lanetrack" id="laneLab"></div></div>
+              <div class="lane" data-tl="pregnancy" hidden><div class="lanename">After transfer</div><div class="lanetrack" id="lanePreg"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="legend">
+          <span data-tl="ivf"><i style="background:var(--rose)"></i>her track</span>
+          <span data-tl="ivf"><i style="background:var(--sage)"></i>his track</span>
+          <span data-tl="ivf"><i style="background:var(--peri)"></i>lab &amp; genetics</span>
+          <span data-tl="pregnancy" hidden><i style="background:var(--butter)"></i>after transfer</span>
+          <span><i style="background:var(--clay-deep)"></i>milestone</span>
+        </div>
+        <div class="notes plain"><p id="tlNote"></p></div>
+      </div>
+
+      <div class="disclaim">
+        Population averages from published IVF and PGT series, not a prediction for any particular person. Real clinics differ a lot in lab performance, protocol, and how they call mosaics. Your embryologist's numbers beat these. Validated patient-facing tools include the <strong>SART patient predictor</strong> and the <strong>McLernon / OPIS cumulative live birth model</strong> — clinic-specific data beats all population models. Grade&nbsp;D coefficients are contested in the literature and excluded from the headline number by default.
+      </div>
+
+    </div><!-- end results column -->
+  </div>
+</div>
+</body>
+</html>

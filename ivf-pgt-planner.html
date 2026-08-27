@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IVF + PGT planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F7F6F1;
+    --card:#FCFBF8;
+    --ink:#37383A;
+    --ink-soft:#6E7073;
+    --ink-faint:#A0A2A3;
+    --line:#E5E3DB;
+    --rose:#E3B9B6;      --rose-deep:#C4877F;
+    --sage:#B5C8B2;      --sage-deep:#7F9C7E;
+    --peri:#B6BEDF;      --peri-deep:#828EC6;
+    --butter:#EADDA8;    --butter-deep:#BDA55F;
+    --lilac:#D2BFDB;     --lilac-deep:#9C82AC;
+    --clay:#E2C4AE;      --clay-deep:#B98F70;
+    --r:14px;
+    --gut:84px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"Instrument Sans",system-ui,sans-serif;
+    font-size:15px;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.gro,.num,button,label,input,select{font-family:"Space Grotesk",system-ui,sans-serif}
+  .wrap{max-width:1140px;margin:0 auto;padding:40px 22px 88px}
+
+  /* ---------- header ---------- */
+  header{margin-bottom:36px}
+  .eyebrow{
+    font-family:"Space Grotesk";font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--ink-faint);font-weight:500;margin-bottom:14px;
+  }
+  h1{
+    font-size:clamp(30px,5vw,46px);font-weight:500;letter-spacing:-.028em;
+    margin:0 0 14px;line-height:1.06;
+  }
+  h1 em{font-style:normal;color:var(--rose-deep)}
+  .sub{max-width:56ch;color:var(--ink-soft);margin:0}
+
+  /* ---------- layout ---------- */
+  .grid{display:grid;grid-template-columns:322px minmax(0,1fr);gap:20px;align-items:start}
+  .grid>div{min-width:0}
+  @media(max-width:880px){.grid{grid-template-columns:1fr}}
+
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+    padding:24px;
+  }
+  .card + .card{margin-top:16px}
+  .card h2{
+    font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;
+    color:var(--ink-faint);margin:0 0 18px;
+  }
+
+  /* ---------- inputs ---------- */
+  .field{margin-bottom:17px}
+  .field:last-child{margin-bottom:0}
+  .field label{display:block;font-size:13px;font-weight:500;margin-bottom:6px}
+  .hint{font-size:12px;color:var(--ink-faint);line-height:1.4;margin-top:5px}
+  input[type=number]{
+    width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:9px;
+    background:var(--paper);font-size:15px;color:var(--ink);
+  }
+  input[type=number]:focus-visible,select:focus-visible{outline:2px solid var(--peri-deep);outline-offset:1px}
+  input::placeholder{color:var(--ink-faint);font-weight:300}
+  select{
+    width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:9px;
+    background:var(--paper);font-size:14px;color:var(--ink);appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 10 7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236E7073' stroke-width='1.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 12px center;
+  }
+  .agerow{display:flex;align-items:center;gap:12px}
+  .agerow input[type=range]{flex:1;accent-color:var(--rose-deep)}
+  .agebox{
+    font-family:"Space Grotesk";font-size:20px;font-weight:500;min-width:36px;text-align:right;
+    font-variant-numeric:tabular-nums;
+  }
+
+  /* ---------- toggles ---------- */
+  .tog{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:11px 0;border-bottom:1px solid var(--line);
+  }
+  .tog:last-of-type{border-bottom:none}
+  .tog .tl{font-size:13.5px;font-weight:500;font-family:"Space Grotesk"}
+  .tog .td{font-size:12px;color:var(--ink-faint);line-height:1.35;margin-top:2px}
+  .switch{position:relative;flex:0 0 auto;width:42px;height:24px}
+  .switch input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}
+  .track{
+    position:absolute;inset:0;background:#E7E5DD;border-radius:999px;transition:background .2s ease;
+    pointer-events:none;
+  }
+  .knob{
+    position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:999px;background:#fff;
+    box-shadow:0 1px 2px rgba(0,0,0,.14);transition:transform .2s cubic-bezier(.3,1.3,.5,1);pointer-events:none;
+  }
+  .switch input:checked ~ .track{background:var(--sage-deep)}
+  .switch input:checked ~ .knob{transform:translateX(18px)}
+  .switch input:focus-visible ~ .track{outline:2px solid var(--peri-deep);outline-offset:2px}
+  .switch.rose input:checked ~ .track{background:var(--lilac-deep)}
+  .switch.clay input:checked ~ .track{background:var(--clay-deep)}
+  .subopt{padding:0 0 12px;margin-top:-4px}
+  .subopt[hidden]{display:none}
+
+  /* ---------- headline result ---------- */
+  .result{
+    background:linear-gradient(150deg,#F2EEEA 0%,#EFF1EC 52%,#EDEFF5 100%);
+    border:1px solid var(--line);border-radius:var(--r);padding:28px;
+  }
+  .bignum{
+    font-family:"Space Grotesk";font-size:clamp(52px,9vw,78px);font-weight:400;letter-spacing:-.045em;
+    line-height:.94;font-variant-numeric:tabular-nums;
+  }
+  .bignum span{font-size:.42em;letter-spacing:-.02em;color:var(--ink-soft);margin-left:2px}
+  .biglabel{max-width:38ch;color:var(--ink-soft);font-size:13.5px;margin-top:12px;line-height:1.5}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:26px;padding-top:22px;border-top:1px solid rgba(0,0,0,.07)}
+  @media(max-width:640px){.stats{grid-template-columns:repeat(2,1fr);gap:20px 16px}}
+  .stat .k{font-family:"Space Grotesk";font-size:25px;font-weight:400;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.1}
+  .stat .v{font-size:11.5px;color:var(--ink-faint);line-height:1.35;margin-top:5px;letter-spacing:.01em}
+
+  /* ---------- funnel ---------- */
+  .stage{padding:11px 0;border-bottom:1px dashed var(--line)}
+  .stage:first-child{padding-top:0}
+  .stage:last-child{border-bottom:none;padding-bottom:0}
+  .stage .top{display:flex;align-items:baseline;justify-content:space-between;gap:14px}
+  .stage .name{font-family:"Space Grotesk";font-size:13.5px;font-weight:500}
+  .stage .name b{font-weight:500;color:var(--ink-faint);font-size:11.5px;margin-left:8px;letter-spacing:.04em}
+  .stage .cnt{font-family:"Space Grotesk";font-size:16px;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .stage .cnt em{font-style:normal;font-size:11.5px;color:var(--ink-faint);margin-left:5px}
+  .bar{height:9px;border-radius:99px;background:#EDEBE3;margin-top:9px;overflow:hidden}
+  .bar i{display:block;height:100%;border-radius:99px;transition:width .45s cubic-bezier(.4,.9,.3,1)}
+  .stage .note{font-size:12px;color:var(--ink-faint);margin-top:8px;line-height:1.45;max-width:66ch}
+  .stage[hidden]{display:none}
+
+  /* ---------- compare ---------- */
+  .compare{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:520px){.compare{grid-template-columns:1fr}}
+  .cbox{background:var(--paper);border:1px solid var(--line);border-radius:11px;padding:16px}
+  .cbox.on{border-color:var(--sage-deep);background:#F1F5EF}
+  .cbox .ct{font-family:"Space Grotesk";font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:8px}
+  .cbox .cn{font-family:"Space Grotesk";font-size:27px;font-weight:400;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1.1}
+  .cbox .cd{font-size:12px;color:var(--ink-soft);margin-top:6px;line-height:1.45}
+
+  /* ---------- timeline ---------- */
+  .tlwrap{position:relative;overflow:hidden}
+  .tlscroll{overflow-x:auto;overflow-y:hidden;padding-bottom:12px;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:#DEDBD1 transparent}
+  .tlscroll::-webkit-scrollbar{height:8px}
+  .tlscroll::-webkit-scrollbar-thumb{background:#DEDBD1;border-radius:99px}
+  .tlscroll::-webkit-scrollbar-track{background:transparent}
+  .tlfade{
+    position:absolute;top:0;right:-1px;bottom:14px;width:46px;pointer-events:none;
+    background:linear-gradient(to right,rgba(252,251,248,0),var(--card) 78%);
+  }
+  .tlinner{position:relative}
+  .tlhead{display:flex;align-items:flex-end;height:28px}
+  .tlunit{
+    flex:0 0 var(--gut);font-family:"Space Grotesk";font-size:10px;letter-spacing:.13em;
+    text-transform:uppercase;color:var(--ink-faint);padding:0 12px 6px 0;font-weight:500;
+  }
+  .axis{position:relative;height:28px;flex:0 0 auto}
+  .wk{position:absolute;bottom:0;width:1px;height:5px;background:#E2DFD5}
+  .wk.q{height:10px;background:#D3D0C5}
+  .wklab{
+    position:absolute;bottom:13px;font-family:"Space Grotesk";font-size:10px;color:var(--ink-faint);
+    transform:translateX(-50%);font-variant-numeric:tabular-nums;
+  }
+  .lane{position:relative;display:flex;align-items:stretch;border-top:1px solid var(--line)}
+  .lanename{
+    flex:0 0 var(--gut);font-family:"Space Grotesk";font-size:10.5px;letter-spacing:.13em;
+    text-transform:uppercase;color:var(--ink-faint);padding:16px 12px 0 0;font-weight:500;
+  }
+  .lanetrack{position:relative;flex:0 0 auto}
+  .gridbg{
+    position:absolute;inset:0;pointer-events:none;
+    background:repeating-linear-gradient(to right,rgba(0,0,0,.042) 0px,rgba(0,0,0,.042) 1px,transparent 1px,transparent var(--wkpx));
+  }
+  .prule{position:absolute;top:4px;bottom:4px;width:1px;background:rgba(0,0,0,.09);pointer-events:none}
+  .seg{
+    position:absolute;height:26px;border-radius:8px;display:flex;align-items:center;padding:0 10px;
+    font-family:"Space Grotesk";font-size:11.5px;font-weight:500;white-space:nowrap;color:#3B3A38;
+    transition:left .35s ease,width .35s ease,top .35s ease;
+  }
+  .segout{
+    position:absolute;height:26px;display:flex;align-items:center;white-space:nowrap;
+    font-family:"Space Grotesk";font-size:11.5px;font-weight:500;color:var(--ink-soft);
+    transition:left .35s ease,top .35s ease;
+  }
+  .pt{position:absolute;width:9px;height:9px;border-radius:2.5px;transform:rotate(45deg);transition:left .35s ease,top .35s ease}
+  .ptlabel{
+    position:absolute;font-family:"Space Grotesk";font-size:10px;color:var(--ink-soft);
+    white-space:nowrap;line-height:14px;transition:left .35s ease,top .35s ease;
+  }
+  .legend{
+    display:flex;flex-wrap:wrap;gap:9px 20px;margin-top:18px;padding-top:15px;
+    border-top:1px solid var(--line);font-size:11.5px;color:var(--ink-faint);
+  }
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:7px;vertical-align:-1px}
+
+  /* ---------- notes ---------- */
+  .notes{margin-top:20px;padding-top:16px;border-top:1px solid var(--line)}
+  .notes.plain{border-top:none;padding-top:0;margin-top:14px}
+  .notes p{color:var(--ink-soft);font-size:13.5px;line-height:1.55;margin:0 0 11px}
+  .notes p:last-child{margin-bottom:0}
+  .disclaim{
+    margin-top:16px;padding:16px 18px;border-radius:var(--r);background:#F1EFE7;border:1px solid var(--line);
+    font-size:12.5px;color:var(--ink-soft);line-height:1.55;
+  }
+  @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Retrieval to twenty weeks</div>
+  <h1>What one egg retrieval is<br>actually <em>likely to give you</em></h1>
+  <p class="sub">Put in what you know. Flip the switches for your situation. The funnel, the odds, and the calendar all move together.</p>
+</header>
+
+<div class="grid">
+
+  <!-- ============ CONTROLS ============ -->
+  <div>
+    <div class="card">
+      <h2>Her numbers</h2>
+
+      <div class="field">
+        <label for="age">Age at retrieval</label>
+        <div class="agerow">
+          <input type="range" id="age" min="25" max="46" value="34" step="1">
+          <div class="agebox" id="ageOut">34</div>
+        </div>
+        <div class="hint">The single biggest driver of everything below.</div>
+      </div>
+
+      <div class="field">
+        <label for="amh">AMH (ng/mL)</label>
+        <input type="number" id="amh" min="0" max="15" step="0.1" placeholder="e.g. 2.1">
+      </div>
+
+      <div class="field">
+        <label for="afc">Antral follicle count</label>
+        <input type="number" id="afc" min="0" max="60" step="1" placeholder="both ovaries, e.g. 14">
+        <div class="hint">Fill in either or both. These predict how many eggs, not how good they are.</div>
+      </div>
+
+      <div class="field">
+        <label for="eggs">Eggs actually retrieved</label>
+        <input type="number" id="eggs" min="0" max="60" step="1" placeholder="skip until you have it">
+        <div class="hint">If you have this, it overrides the prediction.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>His side</h2>
+      <div class="tog">
+        <div>
+          <div class="tl">Male factor</div>
+          <div class="td">Low count, poor motility, or high DNA fragmentation</div>
+        </div>
+        <span class="switch clay"><input type="checkbox" id="mf" aria-label="Male factor"><span class="track"></span><span class="knob"></span></span>
+      </div>
+      <div class="subopt" id="mfOpts" hidden>
+        <label for="mfLevel" style="font-size:13px;font-weight:500;display:block;margin:10px 0 6px">How severe</label>
+        <select id="mfLevel">
+          <option value="mod">Moderate — usable ejaculated sample</option>
+          <option value="sev">Severe — surgical retrieval (TESE / micro-TESE)</option>
+        </select>
+        <div class="hint">Adds a urology workup before the cycle and pulls down fertilization and blastocyst rates.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Testing</h2>
+      <div class="tog">
+        <div>
+          <div class="tl">PGT-A</div>
+          <div class="td">Screens each blastocyst for chromosome count</div>
+        </div>
+        <span class="switch"><input type="checkbox" id="pgta" checked aria-label="PGT-A"><span class="track"></span><span class="knob"></span></span>
+      </div>
+      <div class="tog">
+        <div>
+          <div class="tl">PGT-M</div>
+          <div class="td">Custom test for one inherited condition</div>
+        </div>
+        <span class="switch rose"><input type="checkbox" id="pgtm" aria-label="PGT-M"><span class="track"></span><span class="knob"></span></span>
+      </div>
+      <div class="subopt" id="pgtmOpts" hidden>
+        <label for="inh" style="font-size:13px;font-weight:500;display:block;margin:10px 0 6px">Inheritance pattern</label>
+        <select id="inh">
+          <option value="ar">Recessive, both partners carry — 75% usable</option>
+          <option value="ad">Dominant, one partner carries — 50% usable</option>
+          <option value="xl">X-linked, she carries — 75% usable</option>
+        </select>
+        <div class="hint">Mendelian odds. Applied on top of chromosome screening, not instead of it.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ RESULTS ============ -->
+  <div>
+
+    <div class="result">
+      <div class="bignum" id="clbr">—<span>%</span></div>
+      <div class="biglabel" id="clbrLabel">chance of a live birth from this one retrieval, working through every embryo it produces</div>
+      <div class="stats">
+        <div class="stat"><div class="k" id="sEmb">—</div><div class="v">embryos you can transfer</div></div>
+        <div class="stat"><div class="k" id="sTr">—</div><div class="v">transfers it likely takes</div></div>
+        <div class="stat"><div class="k" id="sWk">—</div><div class="v">weeks to a positive test</div></div>
+        <div class="stat"><div class="k" id="sMc">—</div><div class="v">miscarriage risk per pregnancy</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Where the eggs go</h2>
+      <div id="funnel"></div>
+    </div>
+
+    <div class="card">
+      <h2>Screening for chromosomes, or not</h2>
+      <div class="compare">
+        <div class="cbox" id="cWith">
+          <div class="ct">With PGT-A</div>
+          <div class="cn" id="cWithN">—</div>
+          <div class="cd" id="cWithD"></div>
+        </div>
+        <div class="cbox" id="cWithout">
+          <div class="ct">Without PGT-A</div>
+          <div class="cn" id="cWithoutN">—</div>
+          <div class="cd" id="cWithoutD"></div>
+        </div>
+      </div>
+      <div class="notes"><p id="compareNote"></p></div>
+    </div>
+
+    <div class="card">
+      <h2>The whole thing, at a glance</h2>
+      <div class="tlwrap">
+        <div class="tlscroll">
+          <div class="tlinner" id="tlinner">
+            <div class="tlhead"><div class="tlunit">week</div><div class="axis" id="axis"></div></div>
+            <div class="lane"><div class="lanename">Her</div><div class="lanetrack" id="laneHer"></div></div>
+            <div class="lane"><div class="lanename">Him</div><div class="lanetrack" id="laneHim"></div></div>
+            <div class="lane"><div class="lanename">Lab</div><div class="lanetrack" id="laneLab"></div></div>
+            <div class="lane"><div class="lanename">Pregnancy</div><div class="lanetrack" id="lanePreg"></div></div>
+          </div>
+        </div>
+        <div class="tlfade"></div>
+      </div>
+      <div class="legend">
+        <span><i style="background:var(--rose)"></i>her track</span>
+        <span><i style="background:var(--sage)"></i>his track</span>
+        <span><i style="background:var(--peri)"></i>lab &amp; genetics</span>
+        <span><i style="background:var(--butter)"></i>after transfer</span>
+        <span><i style="background:var(--clay-deep)"></i>milestone</span>
+      </div>
+      <div class="notes plain"><p id="tlNote"></p></div>
+    </div>
+
+    <div class="disclaim">
+      Population averages from published IVF and PGT series, not a prediction for any particular person. Real clinics differ a lot in lab performance, protocol, and how they call mosaics. Your embryologist's numbers beat these.
+    </div>
+
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- small helpers ---------- */
+  function lerp(pts, x){
+    if(x <= pts[0][0]) return pts[0][1];
+    if(x >= pts[pts.length-1][0]) return pts[pts.length-1][1];
+    for(var i=0;i<pts.length-1;i++){
+      var a=pts[i], b=pts[i+1];
+      if(x>=a[0] && x<=b[0]){
+        var t=(x-a[0])/(b[0]-a[0]);
+        return a[1]+t*(b[1]-a[1]);
+      }
+    }
+    return pts[pts.length-1][1];
+  }
+  var $ = function(id){ return document.getElementById(id); };
+  var pct = function(v){ return Math.round(v*100); };
+
+  /* ---------- model curves ---------- */
+  // euploid fraction of blastocysts, by age
+  var EUPLOID = [[26,.68],[30,.63],[33,.60],[35,.55],[37,.44],[39,.34],[41,.26],[43,.13],[45,.05],[47,.02]];
+  // live birth per euploid single transfer, by age (SART-derived)
+  var LBR_EUP = [[28,.552],[34,.548],[36,.536],[39,.518],[41.5,.497],[43,.462],[46,.42]];
+  // oocyte maturity rate, by age
+  var MATURE  = [[28,.81],[34,.79],[38,.76],[42,.73],[46,.70]];
+  // 2PN to usable blastocyst, by age
+  var BLAST   = [[28,.47],[33,.45],[36,.41],[39,.37],[42,.32],[46,.27]];
+  // miscarriage after an untested blastocyst transfer, by age
+  var MC_UNT  = [[28,.14],[34,.16],[37,.21],[40,.28],[43,.36],[46,.44]];
+
+  var NO_RESULT = 0.03;   // biopsies that come back with no call
+  var FALSE_POS = 0.06;   // viable embryos set aside as aneuploid or mosaic
+  var LBR_ANEU  = 0.02;   // live birth if you transfer an aneuploid blastocyst
+
+  function read(){
+    return {
+      age:  +$("age").value,
+      amh:  parseFloat($("amh").value),
+      afc:  parseFloat($("afc").value),
+      eggs: parseFloat($("eggs").value),
+      mf:   $("mf").checked,
+      mfL:  $("mfLevel").value,
+      pgta: $("pgta").checked,
+      pgtm: $("pgtm").checked,
+      inh:  $("inh").value
+    };
+  }
+
+  function compute(s){
+    var age = s.age;
+    var ageTaper = lerp([[28,1],[35,.97],[40,.88],[46,.78]], age);
+
+    // --- how many eggs ---
+    var src = "typical for this age", retrieved;
+    if(!isNaN(s.eggs) && s.eggs > 0){
+      retrieved = s.eggs; src = "your retrieval";
+    } else {
+      var ests = [];
+      if(!isNaN(s.afc) && s.afc > 0) ests.push(s.afc * 0.85 * ageTaper);
+      if(!isNaN(s.amh) && s.amh > 0) ests.push((3.1 * s.amh + 2.4) * ageTaper);
+      if(ests.length){
+        retrieved = ests.reduce(function(a,b){return a+b;},0)/ests.length;
+        src = ests.length === 2 ? "AMH and follicle count" : (!isNaN(s.afc) && s.afc>0 ? "follicle count" : "AMH");
+      } else {
+        retrieved = lerp([[26,15],[32,13],[36,10.5],[39,8],[42,5.5],[46,3]], age);
+      }
+    }
+    retrieved = Math.max(0, retrieved);
+
+    // --- funnel rates ---
+    var matR   = lerp(MATURE, age);
+    var fertR  = s.mf ? (s.mfL === "sev" ? 0.53 : 0.63) : 0.72;
+    var blastR = lerp(BLAST, age) * (s.mf ? (s.mfL === "sev" ? 0.82 : 0.92) : 1);
+    var eupR   = lerp(EUPLOID, age);
+    var lbrEup = lerp(LBR_EUP, age);
+    var mFrac  = s.pgtm ? (s.inh === "ad" ? 0.50 : 0.75) : 1;
+
+    var mature = retrieved * matR;
+    var fert   = mature * fertR;
+    var blasts = fert * blastR;
+    var biopsy = (s.pgta || s.pgtm) ? blasts * (1 - NO_RESULT) : blasts;
+
+    // Per-blastocyst outcome. A screen can only remove embryos from the pool,
+    // never improve one, so cumulative odds fall slightly whenever you screen.
+    // T = chance a given blastocyst ends up transferred.
+    // p = chance of live birth once it is transferred.
+    function arm(useA, useM){
+      var r = (useA || useM) ? (1 - NO_RESULT) : 1;
+      var m = useM ? mFrac : 1;
+      var T, p;
+      if(useA){ T = r * eupR * (1 - FALSE_POS) * m; p = lbrEup; }
+      else    { T = r * m;                          p = eupR * lbrEup + (1 - eupR) * LBR_ANEU; }
+      var n = blasts * T;
+      var clbr = blasts > 0 ? 1 - Math.pow(1 - T * p, blasts) : 0;
+      return { T:T, p:p, n:n, clbr:clbr, transfers: p > 0 ? clbr / p : 0 };
+    }
+
+    var main = arm(s.pgta, s.pgtm);
+    var alt  = arm(!s.pgta, s.pgtm);
+
+    var transferable = main.n;
+    var perTransfer  = main.p;
+    var mcRate       = s.pgta ? 0.10 : lerp(MC_UNT, age);
+    var clbr         = main.clbr;
+    var expTransfers = main.transfers;
+    var altClbr      = alt.clbr;
+    var altTransfers = alt.transfers;
+
+    // --- calendar ---
+    var prepEnd = 13 + (s.mf ? (s.mfL === "sev" ? 7 : 4) : 0);
+    var genEnd  = s.pgtm ? 14 : 0;
+    var cycle   = Math.max(prepEnd, genEnd);
+    var resultWk = s.pgtm ? 2 : (s.pgta ? 1.5 : 0);
+    var fetStart = cycle + 3 + resultWk;
+    var transferWk = fetStart + 5;
+    var betaWk = transferWk + 1.5;
+    var extra = Math.max(0, expTransfers - 1) * 6;
+    var weeksToBeta = betaWk + extra;
+
+    return {
+      s:s, retrieved:retrieved, src:src,
+      matR:matR, fertR:fertR, blastR:blastR, eupR:eupR, mFrac:mFrac,
+      mature:mature, fert:fert, blasts:blasts, biopsy:biopsy,
+      transferable:transferable, perTransfer:perTransfer, mcRate:mcRate,
+      clbr:clbr, expTransfers:expTransfers,
+      altClbr:altClbr, altTransfers:altTransfers,
+      cycle:cycle, prepEnd:prepEnd, genEnd:genEnd, resultWk:resultWk,
+      fetStart:fetStart, transferWk:transferWk, weeksToBeta:weeksToBeta
+    };
+  }
+
+  /* ---------- funnel ---------- */
+  function renderFunnel(d){
+    var s = d.s, max = Math.max(d.retrieved, 1);
+    var rows = [];
+
+    rows.push({name:"Eggs retrieved", tag:d.src, n:d.retrieved, color:"var(--rose)", note:""});
+    rows.push({name:"Mature (MII)", tag:pct(d.matR)+"%", n:d.mature, color:"var(--rose)",
+      note:"Immature eggs can't be fertilized and are set aside on day zero."});
+    rows.push({name:"Fertilized", tag:pct(d.fertR)+"%", n:d.fert, color:"var(--sage)",
+      note: s.mf
+        ? "One sperm picked and injected into one egg, by hand, one egg at a time. With male factor this is the only way in, and the yield drops."
+        : "ICSI, one sperm into one egg at a time. Standard whenever embryos will be biopsied, so stray sperm DNA doesn't contaminate the result."});
+    rows.push({name:"Blastocysts", tag:pct(d.blastR)+"%", n:d.blasts, color:"var(--sage)",
+      note:"Days 5 and 6. This is the steepest drop in the whole process."});
+
+    if(s.pgta || s.pgtm){
+      rows.push({name:"Biopsied with a result", tag:pct(1-NO_RESULT)+"%", n:d.biopsy, color:"var(--peri)",
+        note:"A few biopsies never amplify well enough to call. Those embryos stay frozen, unclassified."});
+    }
+    if(s.pgta){
+      rows.push({name:"Euploid", tag:pct(d.eupR)+"%", n:d.biopsy*d.eupR, color:"var(--peri)",
+        note:"Age sets this number and almost nothing else moves it."});
+      rows.push({name:"Cleared for transfer", tag:pct(1-FALSE_POS)+"%", n:d.biopsy*d.eupR*(1-FALSE_POS), color:"var(--peri)",
+        note:"Some healthy embryos get called aneuploid or mosaic and never make it out of the freezer. That's the cost side of screening."});
+    }
+    if(s.pgtm){
+      rows.push({name:"Unaffected", tag:pct(d.mFrac)+"%", n:d.transferable, color:"var(--lilac)",
+        note:"Mendelian odds, independent of chromosome count. An affected embryo looks perfect and implants normally, which is why nothing else catches it."});
+    }
+    rows.push({name:"Transferable", tag:"", n:d.transferable, color:"var(--butter-deep)", note:"", strong:true});
+
+    var html = rows.map(function(r){
+      var w = Math.max(0, Math.min(100, (r.n/max)*100));
+      return '<div class="stage">'+
+        '<div class="top"><div class="name">'+r.name+(r.tag?'<b>'+r.tag+'</b>':'')+'</div>'+
+        '<div class="cnt">'+ (r.n<10 ? r.n.toFixed(1) : Math.round(r.n)) +'<em>embryos</em></div></div>'+
+        '<div class="bar"><i style="width:'+w+'%;background:'+r.color+'"></i></div>'+
+        (r.note?'<div class="note">'+r.note+'</div>':'')+
+      '</div>';
+    }).join("");
+    $("funnel").innerHTML = html;
+  }
+
+  /* ---------- timeline ---------- */
+  var PW = 34; // pixels per week, fixed. The board scrolls rather than squeezing.
+
+  function packRows(items){
+    var ends = [];
+    items.forEach(function(it){
+      for(var r=0;r<ends.length;r++){
+        if(it.L >= ends[r] + 12){ it.row = r; ends[r] = it.R; return; }
+      }
+      it.row = ends.length; ends.push(it.R);
+    });
+    return ends.length;
+  }
+  function wSeg(t){ return t.length * 6.6 + 22; }
+  function wPt(t){ return t.length * 5.4 + 14; }
+
+  function buildLane(el, segs, pts, W){
+    segs = segs.slice().sort(function(a,b){ return a.a - b.a; });
+    pts  = pts.slice().sort(function(a,b){ return a.a - b.a; });
+
+    segs.forEach(function(g){
+      g.L  = g.a * PW;
+      g.Wd = Math.max((g.b - g.a) * PW, 8);
+      g.inside = g.Wd >= wSeg(g.label);
+      g.R  = g.inside ? g.L + g.Wd : g.L + g.Wd + 8 + wSeg(g.label);
+    });
+    var segRows = packRows(segs);
+
+    pts.forEach(function(p){
+      p.L = p.a * PW;
+      p.R = p.L + 13 + wPt(p.label);
+    });
+    var ptRows = packRows(pts);
+
+    var SEG_H = 30, PT_H = 17, TOP = 11;
+    var ptTop = TOP + segRows * SEG_H + (segRows ? 5 : 0);
+    var h = ptTop + ptRows * PT_H + 13;
+
+    var html = '<div class="gridbg"></div>';
+    pts.forEach(function(p){ html += '<div class="prule" style="left:'+p.L+'px"></div>'; });
+    segs.forEach(function(g){
+      var t = TOP + g.row * SEG_H;
+      html += '<div class="seg" title="'+g.label+'" style="left:'+g.L+'px;width:'+g.Wd+'px;top:'+t+'px;background:'+g.bg+'">'+
+              (g.inside ? g.label : '') + '</div>';
+      if(!g.inside){
+        html += '<div class="segout" style="left:'+(g.L + g.Wd + 8)+'px;top:'+t+'px">'+g.label+'</div>';
+      }
+    });
+    pts.forEach(function(p){
+      var t = ptTop + p.row * PT_H;
+      html += '<div class="pt" style="left:'+(p.L - 4.5)+'px;top:'+(t + 3)+'px;background:var(--clay-deep)"></div>';
+      html += '<div class="ptlabel" style="left:'+(p.L + 9)+'px;top:'+t+'px">'+p.label+'</div>';
+    });
+
+    el.innerHTML = html;
+    el.style.width = W + "px";
+    el.style.height = h + "px";
+  }
+
+  function renderTimeline(d){
+    var s = d.s, c = d.cycle, t = d.transferWk;
+    var total = Math.ceil(t + 21);
+    var W = total * PW;
+
+    var inner = $("tlinner");
+    inner.style.width = (84 + W) + "px";
+    inner.style.setProperty("--wkpx", PW + "px");
+
+    var ax = "";
+    for(var w = 0; w <= total; w++){
+      ax += '<div class="wk'+(w % 4 === 0 ? ' q' : '')+'" style="left:'+(w*PW)+'px"></div>';
+      if(w % 2 === 0) ax += '<div class="wklab" style="left:'+(w*PW)+'px">'+w+'</div>';
+    }
+    var axis = $("axis");
+    axis.style.width = W + "px";
+    axis.innerHTML = ax;
+
+    // Her
+    var herS = [
+      {a:0, b:13, label:"Egg-quality window, 90 days", bg:"var(--rose)"},
+      {a:4, b:10, label:"Baseline workup", bg:"#EFD9D6"},
+      {a:c, b:c+2, label:"Stimulation", bg:"var(--rose)"},
+      {a:d.fetStart, b:d.fetStart+5, label:"Lining prep", bg:"#EFD9D6"}
+    ];
+    var herP = [ {a:c+2, label:"retrieval"}, {a:t, label:"transfer"} ];
+
+    // Him
+    var himS = [ {a:0, b:13, label:"Sperm turnover, 90 days", bg:"var(--sage)"} ];
+    var himP = [ {a:1, label:"semen analysis"}, {a:Math.max(4, c-2), label:"backup freeze"} ];
+    if(s.mf){
+      himS.push({a:2, b:(s.mfL==="sev" ? 12 : 9),
+        label:(s.mfL==="sev" ? "Urology, DFI, surgical plan" : "Urology, DFI, retest"), bg:"#D8E4D6"});
+      if(s.mfL==="sev") himP.push({a:c+2, label:"TESE, same day"});
+    }
+
+    // Lab
+    var labS = [], labP = [];
+    if(s.pgtm){
+      labS.push({a:0, b:3, label:"Carrier screen", bg:"var(--peri)"});
+      labS.push({a:3, b:6, label:"Family DNA in", bg:"#CDD3EA"});
+      labS.push({a:6, b:14, label:"Build + validate custom test", bg:"var(--peri)"});
+    }
+    labS.push({a:c+2, b:c+3, label:"Fertilize + culture", bg:"#CDD3EA"});
+    if(s.pgta || s.pgtm){
+      labS.push({a:c+3, b:c+3+d.resultWk, label:"Results", bg:"var(--peri)"});
+      labP.push({a:c+3, label:"biopsy + freeze"});
+    } else {
+      labP.push({a:c+3, label:"freeze all"});
+    }
+
+    // Pregnancy
+    var pS = [
+      {a:t, b:t+1.5, label:"Wait", bg:"#F0E8C8"},
+      {a:t+1.5, b:t+4.5, label:"Early scans", bg:"var(--butter)"},
+      {a:t+4.5, b:t+8.5, label:"OB handoff", bg:"#F0E8C8"}
+    ];
+    var pP = [ {a:t+1.5, label:"beta hCG"}, {a:t+4.5, label:"heartbeat"}, {a:t+8.5, label:"NIPT"} ];
+    if(s.pgtm){
+      pS.push({a:t+8.5, b:t+14, label:"Confirmatory window", bg:"var(--butter)"});
+      pS.push({a:t+14, b:t+20, label:"To anatomy scan", bg:"#F0E8C8"});
+      pP.push({a:t+14, label:"amnio"});
+    } else {
+      pS.push({a:t+8.5, b:t+20, label:"To anatomy scan", bg:"var(--butter)"});
+    }
+    pP.push({a:t+20, label:"20wk scan"});
+
+    buildLane($("laneHer"),  herS, herP, W);
+    buildLane($("laneHim"),  himS, himP, W);
+    buildLane($("laneLab"),  labS, labP, W);
+    buildLane($("lanePreg"), pS,   pP,   W);
+
+    var bits = [];
+    if(s.pgtm) bits.push("the custom test build is the critical path, and it can't start until reference DNA from relatives is in hand");
+    if(s.mf) bits.push(s.mfL==="sev"
+      ? "surgical retrieval adds a urology track and pushes the cycle back about seven weeks"
+      : "the urology workup adds about four weeks before you can start");
+    if(!s.pgtm && !s.mf) bits.push("nothing is waiting on a lab build, so the 90-day gamete window sets the start date");
+    $("tlNote").textContent = "Right now " + bits.join(", and ") +
+      ". Retrieval lands around week " + Math.round(c+2) + ", transfer around week " + Math.round(t) +
+      ", the 20-week scan around week " + Math.round(t+20) + ".";
+  }
+
+  /* ---------- compare box ---------- */
+  function renderCompare(d){
+    var s = d.s;
+    var withN, withoutN, withT, withoutT;
+    if(s.pgta){ withN=d.clbr; withT=d.expTransfers; withoutN=d.altClbr; withoutT=d.altTransfers; }
+    else      { withN=d.altClbr; withT=d.altTransfers; withoutN=d.clbr; withoutT=d.expTransfers; }
+
+    $("cWithN").textContent = pct(withN)+"%";
+    $("cWithoutN").textContent = pct(withoutN)+"%";
+    $("cWithD").textContent = withT.toFixed(1)+" transfers, ~10% miscarriage risk";
+    $("cWithoutD").textContent = withoutT.toFixed(1)+" transfers, ~"+pct(lerp(MC_UNT, s.age))+"% miscarriage risk";
+    $("cWith").className = "cbox" + (s.pgta ? " on":"");
+    $("cWithout").className = "cbox" + (!s.pgta ? " on":"");
+
+    var saved = withoutT - withT;
+    var gap = Math.max(0, withoutN - withN);
+    var note = "Screening can only take embryos out of the pool, never improve one, so from a fixed cohort it costs about "+
+      (gap*100).toFixed(1)+" points of cumulative live birth. A few viable embryos get called aneuploid or mosaic and never leave the freezer. "+
+      "What it buys back is "+saved.toFixed(1)+" fewer transfers, roughly "+Math.round(saved*6)+" weeks, and miscarriage risk of about 10% instead of "+
+      pct(lerp(MC_UNT, s.age))+"%. That trade gets better with age, because the transfers you skip are ones that were never going to work.";
+    if(d.s.pgtm){
+      note += " None of this logic carries over to PGT-M. There is no natural filter for a single-gene condition: an affected embryo implants and develops like any other. Skip it and each transfer carries "+
+        pct(1-d.mFrac)+"% odds of an affected pregnancy, found at CVS or amnio instead of in the freezer.";
+    }
+    $("compareNote").textContent = note;
+  }
+
+  /* ---------- top line ---------- */
+  function renderHead(d){
+    $("clbr").innerHTML = pct(d.clbr) + '<span>%</span>';
+    $("sEmb").textContent = d.transferable < 10 ? d.transferable.toFixed(1) : Math.round(d.transferable);
+    $("sTr").textContent  = d.expTransfers.toFixed(1);
+    $("sWk").textContent  = Math.round(d.weeksToBeta);
+    $("sMc").textContent  = pct(d.mcRate) + "%";
+    var bits = [];
+    if(d.s.pgta) bits.push("chromosome-screened");
+    if(d.s.pgtm) bits.push("unaffected");
+    var label = bits.length
+      ? "chance of a live birth from this one retrieval, working through every " + bits.join(", ") + " embryo it produces"
+      : "chance of a live birth from this one retrieval, transferring every blastocyst one at a time";
+    $("clbrLabel").textContent = label;
+  }
+
+  /* ---------- wire up ---------- */
+  function update(){
+    $("ageOut").textContent = $("age").value;
+    $("mfOpts").hidden = !$("mf").checked;
+    $("pgtmOpts").hidden = !$("pgtm").checked;
+    var d = compute(read());
+    renderHead(d);
+    renderFunnel(d);
+    renderCompare(d);
+    renderTimeline(d);
+  }
+
+  ["age","amh","afc","eggs","mf","mfLevel","pgta","pgtm","inh"].forEach(function(id){
+    var el = $(id);
+    el.addEventListener("input", update);
+    el.addEventListener("change", update);
+  });
+  window.addEventListener("resize", update);
+  update();
+})();
+</script>
+</body>
+</html>
