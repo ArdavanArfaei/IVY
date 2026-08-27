@@ -201,11 +201,12 @@ select {
 .pgt-stack-step b { color: var(--peri-deep); font-weight: 600; margin-right: 3px; }
 
 /* Modifier chips */
+#chips { margin: 4px 0 8px; }
 .chips-wrap {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  padding: 14px 0 2px;
+  padding: 4px 0 8px;
 }
 .chip {
   display: flex;
