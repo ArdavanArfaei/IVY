@@ -76,7 +76,11 @@ function updateMFHint() {
 function update() {
   // Age output
   $('ageOut').textContent   = $('age').value;
-  $('retrievalsOut').textContent = $('retrievals').value;
+
+  const WORDS = ['', 'one', 'two', 'three', 'four'];
+  const n = +$('retrievals').value;
+  $('retrievalsOut').textContent  = n;
+  $('retrievalWord').textContent  = WORDS[n] || n;
 
   // Sub-option visibility
   $('pgtmOpts').hidden  = !$('pgtm').checked;
